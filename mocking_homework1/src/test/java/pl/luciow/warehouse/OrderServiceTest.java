@@ -7,13 +7,15 @@ package pl.luciow.warehouse;
 
 import org.junit.Test;
 import org.mockito.Mockito;
-
+import static org.junit.Assert.*;
 import pl.luciow.warehouse.impl.OrderServiceImpl;
 import pl.luciow.warehouse.impl.WarehouseImpl;
+import pl.luciow.warehouse.model.Item;
 import pl.luciow.warehouse.model.NotEnoughItemsException;
 import pl.luciow.warehouse.model.Order;
 import pl.luciow.warehouse.model.OrderProcessException;
 
+import java.util.ArrayList;
 import java.util.List;
 ;/**
  *
@@ -25,19 +27,25 @@ public class OrderServiceTest {
 
     @SuppressWarnings({ "unchecked" })
 	@Test
-    public void fillOrderSuccesTest() throws NotEnoughItemsException, OrderProcessException {
+    public void fillOrderSuccesTest() {
     	Warehouse warehouseMock = Mockito.mock(Warehouse.class);
-    	Mockito.when(warehouseMock.removeItems(Mockito.any(List.class))).thenReturn(null);
     	orderService = new OrderServiceImpl(null, null, warehouseMock);
-    	orderService.fillOrder(new Order());
+    	try {
+    	Mockito.when(warehouseMock.removeItems(Mockito.any(List.class))).thenReturn(null);
+    	orderService.fillOrder(new Order());//sprawdzic czy zwraca to co powinien
+    	}
+    	catch (Exception e) {
+    		assertTrue(false);
+    	}
+    	assertTrue(true);
     }
 
     @SuppressWarnings("unchecked")
 	@Test (expected = OrderProcessException.class)
     public void fillOrderThrowTest() throws NotEnoughItemsException, OrderProcessException  {
     	Warehouse warehouseMock = Mockito.mock(Warehouse.class);
-    	Mockito.when(warehouseMock.removeItems(Mockito.any(List.class))).thenThrow(new NotEnoughItemsException());
     	orderService = new OrderServiceImpl(null, null, warehouseMock);
+    	Mockito.when(warehouseMock.removeItems(Mockito.any(List.class))).thenThrow(new NotEnoughItemsException());
     	orderService.fillOrder(new Order());
     }
 
@@ -45,11 +53,11 @@ public class OrderServiceTest {
 	@Test
     public void cancelOrderTest() throws OrderProcessException {
     	Warehouse warehouseMock = Mockito.mock(WarehouseImpl.class);
-    	Order orderMock = Mockito.mock(Order.class);
+    	Order order = new Order();
+    	order.setItems(new ArrayList<Item>());//dodac do listy itemow jakis element i sprawdzic czy warehouse ma poprawne elementy zgodne z tym co dodalismy do ordera
     	Mockito.doCallRealMethod().when(warehouseMock).addItems(Mockito.any(List.class));
-    	Mockito.doCallRealMethod().when(orderMock).setItems(Mockito.any(List.class));
     	orderService = new OrderServiceImpl(null, null, warehouseMock);
-    	orderService.cancelOrder(orderMock);
+    	orderService.cancelOrder(order);
     }
 
     @Test
