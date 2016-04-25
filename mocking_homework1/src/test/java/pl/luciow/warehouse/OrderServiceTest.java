@@ -26,7 +26,7 @@ import java.util.List;
  */
 public class OrderServiceTest {
 
-    private OrderService orderService;
+	private OrderService orderService;
 
     @SuppressWarnings({ "unchecked" })
 	@Test
