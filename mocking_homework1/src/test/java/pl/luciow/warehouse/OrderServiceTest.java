@@ -9,8 +9,10 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import static org.junit.Assert.*;
 import pl.luciow.warehouse.impl.OrderServiceImpl;
+import pl.luciow.warehouse.impl.PaymentServiceImpl;
 import pl.luciow.warehouse.impl.WarehouseImpl;
 import pl.luciow.warehouse.model.Item;
+import pl.luciow.warehouse.model.Mail;
 import pl.luciow.warehouse.model.NotEnoughItemsException;
 import pl.luciow.warehouse.model.Order;
 import pl.luciow.warehouse.model.OrderProcessException;
@@ -59,32 +61,39 @@ public class OrderServiceTest {
     	Item item = new Item();
     	item.setName("Przedmiocik");
     	lista.add(item);
-    	order.setItems(lista);//dodac do listy itemow jakis element i sprawdzic czy warehouse ma poprawne
-    	//elementy zgodne z tym co dodalismy do ordera
+    	order.setItems(lista);
     	Mockito.doCallRealMethod().when(warehouseMock).addItems(Mockito.any(List.class));
+    	Mockito.doCallRealMethod().when(warehouseMock).getItems();
     	orderService = new OrderServiceImpl(null, null, warehouseMock);
     	orderService.cancelOrder(order);
-    	//dlaczego tutaj w warehouse mock nie ma zadnej listy, skoro powinna powstac po wywolaniu cancelOrder dla orderService?
-    	//no i niby mam wyzej doCallRealMethod dla add Items, a po wejsciu w debugerze do cancelOrder, a w niej do addItems
-    	//debug lata po jakichs metodach mocka, a nie po rzeczywistej metodzie warehouse.
     	assertEquals(warehouseMock.getItems().get(0).getName(), item.getName());
     }
 
     @Test 
-    public void processPaymentThrowTest() {
-    	PaymentService paymentServiceMock = Mockito.mock(PaymentService.class);
+    public void processPaymentThrowTest() throws Exception{
+    	PaymentService paymentServiceMock = Mockito.mock(PaymentServiceImpl.class);
     	MailService mailServiceMock = Mockito.mock(MailService.class);
-    	try {
-    	Mockito.when(paymentServiceMock.processPayment(new Payment()).thenThrow(new Exception());//dlaczego ta metoda nie chce przejsc?
-    	paymentServiceMock.processPayment(new Payment());
-    	}
-    	catch (Exception e) {
-    		assertTrue(true);
-    	}
+    	Order orderMock = Mockito.mock(Order.class);
+    	orderService = new OrderServiceImpl(mailServiceMock, paymentServiceMock, null);
+    	Mockito.when(paymentServiceMock.processPayment(Mockito.any(Payment.class))).thenThrow(new Exception());
+    	orderService.processPayment(orderMock, new Payment());
+    	Mockito.verify(mailServiceMock).sendMail((Mail)Mockito.argThat(new MailMatcherZad4()));
     }
 
     @Test
     public void processPaymentSuccessTest() {
+    	PaymentService paymentServiceMock = Mockito.mock(PaymentServiceImpl.class);
+    	MailService mailServiceMock = Mockito.mock(MailService.class);
+    	Order orderMock = Mockito.mock(Order.class);
+    	orderService = new OrderServiceImpl(mailServiceMock, paymentServiceMock, null);
+    	try {
+    	Mockito.when(paymentServiceMock.processPayment(Mockito.any(Payment.class))).thenReturn(1L);
+    	}
+    	catch(Exception e) {
+    		assertTrue(false);
+    	}
+    	orderService.processPayment(orderMock, new Payment());
+    	Mockito.verify(mailServiceMock).sendMail((Mail)Mockito.argThat(new MailMatcherZad5()));
     }
 
 }
