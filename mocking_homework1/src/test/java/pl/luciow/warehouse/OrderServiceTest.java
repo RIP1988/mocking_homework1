@@ -69,7 +69,8 @@ public class OrderServiceTest {
     	assertEquals(warehouseMock.getItems().get(0).getName(), item.getName());
     }
 
-    @Test 
+    @SuppressWarnings("unchecked")
+	@Test 
     public void processPaymentThrowTest() throws Exception{
     	PaymentService paymentServiceMock = Mockito.mock(PaymentServiceImpl.class);
     	MailService mailServiceMock = Mockito.mock(MailService.class);
@@ -77,10 +78,11 @@ public class OrderServiceTest {
     	orderService = new OrderServiceImpl(mailServiceMock, paymentServiceMock, null);
     	Mockito.when(paymentServiceMock.processPayment(Mockito.any(Payment.class))).thenThrow(new Exception());
     	orderService.processPayment(orderMock, new Payment());
-    	Mockito.verify(mailServiceMock).sendMail((Mail)Mockito.argThat(new MailMatcherZad4()));
+    	Mockito.verify(mailServiceMock).sendMail((Mail)Mockito.argThat(new MailMatcherError()));
     }
 
-    @Test
+    @SuppressWarnings("unchecked")
+	@Test
     public void processPaymentSuccessTest() {
     	PaymentService paymentServiceMock = Mockito.mock(PaymentServiceImpl.class);
     	MailService mailServiceMock = Mockito.mock(MailService.class);
@@ -93,7 +95,7 @@ public class OrderServiceTest {
     		assertTrue(false);
     	}
     	orderService.processPayment(orderMock, new Payment());
-    	Mockito.verify(mailServiceMock).sendMail((Mail)Mockito.argThat(new MailMatcherZad5()));
+    	Mockito.verify(mailServiceMock).sendMail((Mail)Mockito.argThat(new MailMatcherSucces()));
     }
 
 }
